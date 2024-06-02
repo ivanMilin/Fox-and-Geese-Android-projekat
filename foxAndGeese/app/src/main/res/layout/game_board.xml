@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/main"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#D7CCC7">
+    android:layout_height="match_parent">
 
     <TextView
         android:id="@+id/turnText"
@@ -18,7 +17,7 @@
         android:visibility="visible" />
 
     <TableLayout
-        android:id="@+id/chessBoard"
+        android:id="@+id/gameBoard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/turnText"
@@ -30,7 +29,7 @@
         android:id="@+id/buttonLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/chessBoard"
+        android:layout_below="@id/gameBoard"
         android:layout_marginTop="80dp">
 
         <Button
@@ -38,22 +37,20 @@
             android:layout_width="150dp"
             android:layout_height="wrap_content"
             android:text="@string/play_again"
-            app:layout_constraintEnd_toStartOf="@+id/button2"
+            app:layout_constraintEnd_toStartOf="@+id/button_play"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintWidth_percent="0.5" />
 
         <Button
-            android:id="@+id/button2"
+            android:id="@+id/button_play"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
-            android:text="@string/go_back"
             android:layout_marginStart="20dp"
+            android:text="@string/go_back"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/button1"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintWidth_percent="0.5" />
-
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 </RelativeLayout>
