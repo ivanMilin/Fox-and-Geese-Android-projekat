@@ -19,6 +19,8 @@ import java.util.Random;
 
 public class GameBoard extends AppCompatActivity {
 
+    Button button_home;
+
     private static final int BOARD_SIZE = 8;
     private TextView turnText;
     private int[][] boardMatrix = {
@@ -42,6 +44,9 @@ public class GameBoard extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.game_board);
+
+        Button button_play = findViewById(R.id.button_play);
+        Button button_home = findViewById(R.id.button_home);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -68,11 +73,7 @@ public class GameBoard extends AppCompatActivity {
         // Example: Show "It's my turn" text
         showTurnText();
 
-        // Set button click listeners
-        Button button1 = findViewById(R.id.button1);
-        Button button2 = findViewById(R.id.button_play);
-
-        button1.setOnClickListener(new View.OnClickListener() {
+        button_play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Toast.makeText(GameBoard.this, "Button 1 clicked", Toast.LENGTH_SHORT).show();
@@ -81,12 +82,13 @@ public class GameBoard extends AppCompatActivity {
             }
         });
 
-        button2.setOnClickListener(new View.OnClickListener() {
+        button_home.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Toast.makeText(GameBoard.this, "Button 2 clicked", Toast.LENGTH_SHORT).show();
                 turnText.setText("Button 2 clicked");
                 disabledBoard = false;
+                finish();
             }
         });
     }

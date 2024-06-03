@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
 
     Spinner spinner;
     Button button_play;
+    Button button_connect;
     EditText et_username;
 
     private Socket socket;
@@ -40,24 +42,43 @@ public class MainActivity extends AppCompatActivity {
         });
 
         spinner = (Spinner) findViewById(R.id.spinner);
-        button_play = (Button) findViewById(R.id.button_play);
+        button_play = (Button) findViewById(R.id.button_home);
+        button_connect = (Button) findViewById(R.id.button_connect);
         et_username = (EditText) findViewById(R.id.et_username);
+
+        MainActivity.this.spinner.setEnabled(false);
+        MainActivity.this.button_play.setEnabled(false);
+
+        button_connect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                connectToServer();
+            }
+        });
+
+        button_play.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendMessage("MRS MAJMUNEEE");
+                loginGUI(v);
+                //create new thread to react on server's messages
+                //new Thread(new ReceiveMessageFromServer(MainActivity.this)).start();
+            }
+        });
     }
 
-    public void loginGUI( View view)
-    {
+    public void loginGUI(View view) {
         Intent intent = new Intent(this, GameBoard.class);
         startActivity(intent);
     }
 
-    /*
-    public void connectToServer(){
+    public void connectToServer() {
 
         new Thread(new Runnable() {
             @Override
             public void run() {
                 Singleton singleton = Singleton.getInstance();
-                if (singleton != null){
+                if (singleton != null) {
                     MainActivity.this.socket = singleton.socket;
                     MainActivity.this.br = singleton.br;
                     MainActivity.this.pw = singleton.pw;
@@ -65,8 +86,18 @@ public class MainActivity extends AppCompatActivity {
                     MainActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            MainActivity.this.spinner.setActivated(true);
-                            MainActivity.this.button_play.setActivated(true);
+                            MainActivity.this.spinner.setEnabled(true);
+                            MainActivity.this.button_play.setEnabled(true);
+                            sendMessage(MainActivity.this.et_username.getText().toString());
+                        }
+                    });
+                }
+                else
+                {
+                    MainActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            MainActivity.this.et_username.setText("NE RADI NESTO");
                         }
                     });
                 }
@@ -74,17 +105,33 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
-    public void sendMessage(String message){
+    public void sendMessage(String message) {
 
         new Thread(new Runnable() {
             @Override
             public void run() {
-                if (MainActivity.this.pw != null){
+                if (MainActivity.this.pw != null) {
                     MainActivity.this.pw.println(message);
                     System.out.println("Message to server: " + message);
                 }
             }
         }).start();
     }
-    */
+
+    public static void serverNotAvailable() {
+        System.out.println("Server is not available");
+    }
+
+    public static void serverAvailable() {
+        System.out.println("Connected on server");
+    }
+
+    public void displayMessageFromReceiveMessageFromServer(String string)
+    {
+        Toast.makeText(this, "String from" + string, Toast.LENGTH_SHORT).show();
+    }
+
+    public BufferedReader getBr() {
+        return br;
+    }
 }
