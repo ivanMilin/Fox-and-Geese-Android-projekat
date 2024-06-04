@@ -1,5 +1,6 @@
 package com.example.foxandgeese;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -15,9 +16,16 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.io.BufferedReader;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.util.Random;
 
 public class GameBoard extends AppCompatActivity {
+
+    private Socket socket;
+    private BufferedReader br;
+    private PrintWriter pw;
 
     Button button_home;
 
@@ -54,6 +62,11 @@ public class GameBoard extends AppCompatActivity {
             return insets;
         });
 
+        connectToServer();
+
+        Intent intent = getIntent();
+        String myUsername = intent.getStringExtra(MainActivity.EXTRA_MY_USERNAME);
+
         placeBlueCircleRandomly();
 
         TableLayout tableLayout = findViewById(R.id.gameBoard);
@@ -77,8 +90,9 @@ public class GameBoard extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Toast.makeText(GameBoard.this, "Button 1 clicked", Toast.LENGTH_SHORT).show();
-                turnText.setText("Button 1 clicked");
+                turnText.setText("Button 1 clicked :" + myUsername);
                 disabledBoard = false;
+                sendMessage("gameboard");
             }
         });
 
@@ -86,13 +100,14 @@ public class GameBoard extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Toast.makeText(GameBoard.this, "Button 2 clicked", Toast.LENGTH_SHORT).show();
-                turnText.setText("Button 2 clicked");
+                turnText.setText("Button 2 clicked :" + myUsername);
                 disabledBoard = false;
                 finish();
             }
         });
     }
 
+    //==============================================================================================
     private void placeBlueCircleRandomly() {
         // Define the possible positions for the blue circle in the last row
         int[] positions = {1, 3, 5, 7};
@@ -104,7 +119,7 @@ public class GameBoard extends AppCompatActivity {
         // Place the blue circle in the selected position
         boardMatrix[7][selectedPosition] = 2;
     }
-
+    //==============================================================================================
     public void initializeBoardUI(TableLayout tableLayout, int cellSize) {
         for (int row1 = 0; row1 < BOARD_SIZE; row1++) {
             TableRow tableRow = new TableRow(this);
@@ -144,7 +159,7 @@ public class GameBoard extends AppCompatActivity {
             tableLayout.addView(tableRow);
         }
     }
-
+    //==============================================================================================
     private void handleCellClick(View cell, int row, int col) {
         if(!disabledBoard) {
             if (selectedCell == null) {
@@ -186,9 +201,41 @@ public class GameBoard extends AppCompatActivity {
             }
         }
     }
-
+    //==============================================================================================
     private void showTurnText() {
         turnText.setVisibility(View.VISIBLE);
         disabledBoard = false;
     }
+    //==============================================================================================
+    public void connectToServer()
+    {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Singleton singleton = Singleton.getInstance();
+                if (singleton != null){
+                    GameBoard.this.socket = singleton.socket;
+                    GameBoard.this.br = singleton.br;
+                    GameBoard.this.pw = singleton.pw;
+                }
+                else {
+                    System.out.println("Problem with socket, pw and br!");
+                }
+            }
+        }).start();
+    }
+    //==============================================================================================
+    public void sendMessage(String message)
+    {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (GameBoard.this.pw != null){
+                    GameBoard.this.pw.println(message);
+                    System.out.println("Message to server: " + message);
+                }
+            }
+        }).start();
+    }
+    //==============================================================================================
 }

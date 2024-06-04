@@ -1,5 +1,8 @@
 package com.example.foxandgeese;
 
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 
@@ -29,6 +32,10 @@ public class ReceiveMessageFromServer implements Runnable{
                         public void run()
                         {
                             parent.displayMessageFromReceiveMessageFromServer(line);
+                            parent.getSpinner().setAdapter(null);
+                            Spinner spinner = parent.getSpinner();
+                            ArrayAdapter<String> adapter = new ArrayAdapter<>(parent, android.R.layout.simple_spinner_dropdown_item, names);
+                            spinner.setAdapter(adapter);
                         }
                     });
                 }
