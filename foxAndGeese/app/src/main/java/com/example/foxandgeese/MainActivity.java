@@ -83,8 +83,12 @@ public class MainActivity extends AppCompatActivity {
         button_play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //sendMessage("MRS MAJMUNEEE");
 
+                String porukaZaSlanje = "GameRequest =" + spinner.getSelectedItem().toString()+"," + et_username.getText().toString() + ":wants to play with you";
+
+                Toast.makeText(MainActivity.this, porukaZaSlanje, Toast.LENGTH_SHORT).show();
+                sendMessage(porukaZaSlanje);
+                /*
                 builder.setTitle("Game request")
                         .setMessage("Player ________ wants to play with you")
                         .setCancelable(false)
@@ -101,14 +105,12 @@ public class MainActivity extends AppCompatActivity {
                             }
                         })
                         .show();
-                //loginGUI(v);
-                //create new thread to react on server's messages
-                //new Thread(new ReceiveMessageFromServer(MainActivity.this)).start();
+                 */
             }
         });
     }
     //==============================================================================================
-    public void loginGUI(View view) {
+    public void loginGUI() {
         Intent intent = new Intent(this, GameBoard.class);
         String m = et_username.getText().toString().trim();
         intent.putExtra(EXTRA_MY_USERNAME, m);
@@ -182,5 +184,9 @@ public class MainActivity extends AppCompatActivity {
 
     public Spinner getSpinner() {
         return spinner;
+    }
+
+    public EditText getEt_username() {
+        return et_username;
     }
 }

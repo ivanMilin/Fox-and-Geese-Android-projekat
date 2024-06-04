@@ -1,5 +1,7 @@
 package com.example.foxandgeese;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
@@ -39,6 +41,60 @@ public class ReceiveMessageFromServer implements Runnable{
                         }
                     });
                 }
+                //GameRequest =jovan,ivan: wants to play with you
+                else if(line.startsWith("GameRequest ="))
+                {
+                    System.out.println(line);
+                    String[] lineSplited = (line.trim()).split("=");
+                    String[] names = lineSplited[1].split(":");
+                    String[] forWhofromWho = names[0].split(",");
+                    String forWho = forWhofromWho[0];
+                    String fromWho = forWhofromWho[1];
+                    parent.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(forWho.equals(parent.getEt_username().getText().toString()))
+                            {
+                                System.out.println("PROVERA DA LI SAM USAO OVDE");
+                                AlertDialog.Builder builder = new AlertDialog.Builder(parent);
+
+                                builder.setTitle("Game request")
+                                        .setMessage("Player " + fromWho  + " wants to play with you")
+                                        .setCancelable(false)
+                                        .setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                parent.sendMessage("ChallengeAccepted ="+fromWho+","+forWho);
+                                                parent.loginGUI();
+                                                dialog.cancel();
+                                            }
+                                        })
+                                        .setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                dialog.cancel();
+                                            }
+                                        })
+                                        .show();
+                            }
+                        }
+                    });
+                }
+                else if(line.startsWith("ChallengeAccepted ="))
+                {
+                    System.out.println("usao sam u 'line.startsWith(GameRequest =)'");
+                    String[] lineSplited = (line.trim()).split("=");
+                    String[] names = lineSplited[1].split(":");
+                    String[] forWhofromWho = names[0].split(",");
+                    String forWho = forWhofromWho[0];
+                    String fromWho = forWhofromWho[1];
+
+                    if(forWho.equals(parent.getEt_username().getText().toString()))
+                    {
+                        System.out.println("Usao sam u proveru if-a");
+                        parent.loginGUI();
+                    }
+                }
             }
             catch (IOException ex) {
                 MainActivity.serverNotAvailable();
@@ -46,7 +102,7 @@ public class ReceiveMessageFromServer implements Runnable{
                 parent.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        parent.displayMessageFromReceiveMessageFromServer("Nista nisam primio");
+                        //parent.displayMessageFromReceiveMessageFromServer("Nista nisam primio");
                     }
                 });
             }
