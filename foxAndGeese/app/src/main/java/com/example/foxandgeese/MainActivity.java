@@ -31,7 +31,9 @@ public class MainActivity extends AppCompatActivity {
     Button button_connect;
     EditText et_username;
 
-    public static String EXTRA_MY_USERNAME ;
+    public static String EXTRA_MY_USERNAME;
+    public static String EXTRA_MY_OPONENT;
+
 
     private Socket socket;
     private BufferedReader br;
@@ -88,32 +90,16 @@ public class MainActivity extends AppCompatActivity {
 
                 Toast.makeText(MainActivity.this, porukaZaSlanje, Toast.LENGTH_SHORT).show();
                 sendMessage(porukaZaSlanje);
-                /*
-                builder.setTitle("Game request")
-                        .setMessage("Player ________ wants to play with you")
-                        .setCancelable(false)
-                        .setPositiveButton("YES", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                loginGUI(v);
-                            }
-                        })
-                        .setNegativeButton("NO", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.cancel();
-                            }
-                        })
-                        .show();
-                 */
             }
         });
     }
     //==============================================================================================
     public void loginGUI() {
         Intent intent = new Intent(this, GameBoard.class);
-        String m = et_username.getText().toString().trim();
-        intent.putExtra(EXTRA_MY_USERNAME, m);
+        String myName = et_username.getText().toString().trim();
+        intent.putExtra(EXTRA_MY_USERNAME, myName);
+        String myOponent = spinner.getSelectedItem().toString();
+        intent.putExtra(EXTRA_MY_OPONENT, myOponent);
         startActivity(intent);
     }
     //==============================================================================================

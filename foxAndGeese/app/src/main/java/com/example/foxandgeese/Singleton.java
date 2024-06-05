@@ -22,7 +22,7 @@ public class Singleton {
     // restricted to this class itself
     private Singleton() throws IOException {
         //loopback address is 10.0.2.2 for Android //192.168.1.7//
-        this.socket = new Socket("192.168.1.7", 6001);
+        this.socket = new Socket("10.0.2.2", 6001);
         this.br = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
         this.pw = new PrintWriter(new OutputStreamWriter(this.socket.getOutputStream()), true);
         if (this.socket == null) {

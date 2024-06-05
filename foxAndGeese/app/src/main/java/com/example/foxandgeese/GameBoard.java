@@ -1,6 +1,9 @@
 package com.example.foxandgeese;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -15,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.io.BufferedReader;
 import java.io.PrintWriter;
@@ -29,6 +33,16 @@ public class GameBoard extends AppCompatActivity {
 
     Button button_home;
 
+    String myUsername;
+    String myOponent;
+
+    int removedFigure;
+    TableLayout tableLayout;
+
+    Thread serverThread;
+
+    int cellSize;
+
     private static final int BOARD_SIZE = 8;
     private TextView turnText;
     private int[][] boardMatrix = {
@@ -39,7 +53,7 @@ public class GameBoard extends AppCompatActivity {
             {0, 3, 0, 3, 0, 3, 0, 3},
             {3, 0, 3, 0, 3, 0, 3, 0},
             {0, 3, 0, 3, 0, 3, 0, 3},
-            {3, 0, 3, 0, 3, 0, 3, 0}
+            {3, 2, 3, 0, 3, 0, 3, 0}
     };
     private View selectedCell = null;
     private int selectedRow = -1;
@@ -47,11 +61,31 @@ public class GameBoard extends AppCompatActivity {
 
     private boolean disabledBoard = false;
 
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals("UPDATE_CELL")) {
+                int row = intent.getIntExtra("row", -1);
+                int col = intent.getIntExtra("col", -1);
+                int value = intent.getIntExtra("value", -1);
+                updateCellBackground(row, col, value);
+            }
+        }
+    };
+
+    @Override
+    protected void onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+        super.onDestroy();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.game_board);
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, new IntentFilter("UPDATE_CELL"));
 
         Button button_play = findViewById(R.id.button_play);
         Button button_home = findViewById(R.id.button_home);
@@ -65,11 +99,12 @@ public class GameBoard extends AppCompatActivity {
         connectToServer();
 
         Intent intent = getIntent();
-        String myUsername = intent.getStringExtra(MainActivity.EXTRA_MY_USERNAME);
+        myUsername = intent.getStringExtra(MainActivity.EXTRA_MY_USERNAME);
+        myOponent = intent.getStringExtra(MainActivity.EXTRA_MY_OPONENT);
 
-        placeBlueCircleRandomly();
+        //placeBlueCircleRandomly();
 
-        TableLayout tableLayout = findViewById(R.id.gameBoard);
+        tableLayout = findViewById(R.id.gameBoard);
         turnText = findViewById(R.id.turnText);
 
         // Get the screen width
@@ -78,7 +113,7 @@ public class GameBoard extends AppCompatActivity {
         int screenWidth = displayMetrics.widthPixels;
 
         // Calculate the size of each cell based on the screen width
-        int cellSize = screenWidth / BOARD_SIZE;
+        cellSize = screenWidth / BOARD_SIZE;
 
         // Initialize the board UI based on the matrix
         initializeBoardUI(tableLayout, cellSize);
@@ -92,7 +127,7 @@ public class GameBoard extends AppCompatActivity {
                 Toast.makeText(GameBoard.this, "Button 1 clicked", Toast.LENGTH_SHORT).show();
                 turnText.setText("Button 1 clicked :" + myUsername);
                 disabledBoard = false;
-                sendMessage("gameboard");
+                //sendMessage("gameboard");
             }
         });
 
@@ -121,6 +156,7 @@ public class GameBoard extends AppCompatActivity {
     }
     //==============================================================================================
     public void initializeBoardUI(TableLayout tableLayout, int cellSize) {
+        tableLayout.removeAllViews();
         for (int row1 = 0; row1 < BOARD_SIZE; row1++) {
             TableRow tableRow = new TableRow(this);
             for (int col1 = 0; col1 < BOARD_SIZE; col1++) {
@@ -169,7 +205,13 @@ public class GameBoard extends AppCompatActivity {
                     selectedRow = row;
                     selectedCol = col;
                     cell.setBackgroundResource(R.drawable.white_cell);
-                    Toast.makeText(this, "Selected cell: " + cell.getTag(), Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(this, "Selected cell: " + cell.getTag(), Toast.LENGTH_SHORT).show();
+
+                    String porukaZaSlanje = "RemoveFigure =" + myOponent + "#"+ selectedRow+","+selectedCol+","+boardMatrix[row][col];
+                    Toast.makeText(this, porukaZaSlanje, Toast.LENGTH_SHORT).show();
+                    sendMessage(porukaZaSlanje);
+
+                    removedFigure = boardMatrix[row][col];
                 }
             } else {
                 // Move the circle to the new cell if it's a white cell
@@ -180,12 +222,20 @@ public class GameBoard extends AppCompatActivity {
                     boardMatrix[row][col] = boardMatrix[selectedRow][selectedCol];
                     boardMatrix[selectedRow][selectedCol] = 0;
 
+                    String porukaZaSlanje = "UpdateTable =" + myOponent + "#"+ row+","+col+","+removedFigure;
+                    Toast.makeText(this, porukaZaSlanje, Toast.LENGTH_SHORT).show();
+                    sendMessage(porukaZaSlanje);
+
                     cell.setBackgroundResource(selectedCircleResource);
                     selectedCell = null;
                     selectedRow = -1;
                     selectedCol = -1;
-                    Toast.makeText(this, "Moved the circle to a new cell!", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(this, "Moved the circle to a new cell!", Toast.LENGTH_SHORT).show();
                     disabledBoard = true;
+
+                    //updateMatrix(selectedRow,selectedCol,selectedCircleResource);
+
+
                 } else {
                     // Deselect if an invalid move
                     if (boardMatrix[selectedRow][selectedCol] == 1) {
@@ -202,24 +252,32 @@ public class GameBoard extends AppCompatActivity {
         }
     }
     //==============================================================================================
-    private void showTurnText() {
+    public void showTurnText() {
         turnText.setVisibility(View.VISIBLE);
         disabledBoard = false;
     }
     //==============================================================================================
-    public void connectToServer()
-    {
+    public void setTurnText(String string) {
+    turnText.setText(string);
+    }
+    //==============================================================================================
+    public void connectToServer() {
+
         new Thread(new Runnable() {
             @Override
             public void run() {
                 Singleton singleton = Singleton.getInstance();
-                if (singleton != null){
+                if (singleton != null) {
                     GameBoard.this.socket = singleton.socket;
                     GameBoard.this.br = singleton.br;
                     GameBoard.this.pw = singleton.pw;
+
+                    //serverThread = new Thread(new ReceiveMessageFromServerForGameBoard(GameBoard.this));
+                    //serverThread.start();
                 }
-                else {
-                    System.out.println("Problem with socket, pw and br!");
+                else
+                {
+                    System.out.println("Failed connection with server");
                 }
             }
         }).start();
@@ -238,4 +296,94 @@ public class GameBoard extends AppCompatActivity {
         }).start();
     }
     //==============================================================================================
+    public int[][] getBoardMatrix() {
+        return boardMatrix;
+    }
+    //==============================================================================================
+    public BufferedReader getBr() {
+        return br;
+    }
+    //==============================================================================================
+    public String getMyUsername() {
+        return myUsername;
+    }
+    //==============================================================================================
+    public static void serverNotAvailable() {
+        System.out.println("Server is not available");
+    }
+    //==============================================================================================
+    public void updateMatrix(int row, int col, int value)
+    {
+        int[][] matrix = getBoardMatrix();
+
+        if (row >= 0 && row < matrix.length && col >= 0 && col < matrix[0].length)
+        {
+            matrix[row][col] = value;
+        } else {
+            throw new IndexOutOfBoundsException("Row or column index out of bounds");
+        }
+    }
+    //==============================================================================================
+    public void updateBoardUI(TableLayout tableLayout, int cellSize) {
+        tableLayout.removeAllViews();
+        for (int row1 = 0; row1 < BOARD_SIZE; row1++) {
+            TableRow tableRow = new TableRow(this);
+            for (int col1 = 0; col1 < BOARD_SIZE; col1++) {
+                TextView cell = new TextView(this);
+                TableRow.LayoutParams params = new TableRow.LayoutParams(cellSize, cellSize);
+                cell.setLayoutParams(params);
+
+                switch (boardMatrix[row1][col1]) {
+                    case 1:
+                        cell.setBackgroundResource(R.drawable.red_circle_cell);
+                        break;
+                    case 2:
+                        cell.setBackgroundResource(R.drawable.blue_circle_cell);
+                        break;
+                    case 3:
+                        cell.setBackgroundResource(R.drawable.black_cell);
+                        break;
+                    case 0:
+                    default:
+                        cell.setBackgroundResource(R.drawable.white_cell);
+                        break;
+                }
+                tableRow.addView(cell);
+            }
+            tableLayout.addView(tableRow);
+        }
+    }
+    //==============================================================================================
+    public void updateCellBackground(int row, int col, int drawableResource) {
+        if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) {
+            throw new IndexOutOfBoundsException("Row or column index out of bounds");
+        }
+
+        TableRow tableRow = (TableRow) tableLayout.getChildAt(row);
+        TextView cell = (TextView) tableRow.getChildAt(col);
+
+        switch (drawableResource) {
+            case 1:
+                cell.setBackgroundResource(R.drawable.red_circle_cell);
+                break;
+            case 2:
+                cell.setBackgroundResource(R.drawable.blue_circle_cell);
+                break;
+            case 3:
+                cell.setBackgroundResource(R.drawable.black_cell);
+                break;
+            case 0:
+            default:
+                cell.setBackgroundResource(R.drawable.white_cell);
+                break;
+        }
+        //initializeBoardUI(tableLayout, cellSize);
+    }
+    //==============================================================================================
+    public void displayMessageFromReceiveMessageFromServer(String string)
+    {
+        Toast.makeText(this, string, Toast.LENGTH_SHORT).show();
+    }
+
+
 }
