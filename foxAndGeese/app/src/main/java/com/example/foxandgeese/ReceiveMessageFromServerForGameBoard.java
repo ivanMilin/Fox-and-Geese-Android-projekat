@@ -2,9 +2,12 @@ package com.example.foxandgeese;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.Toast;
+
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,12 +30,9 @@ public class ReceiveMessageFromServerForGameBoard implements Runnable{
         while (true) {
             try {
                 String line = this.br.readLine();
-                System.out.println("-> ReceiveMessageFromServerForGameBoard <-" + line);
 
-                parent.displayMessageFromReceiveMessageFromServer(line);
+
                 if(line.startsWith("UpdateTable =")) {
-
-
                     String[] lineSplited = (line.trim()).split("=");
                     String[] nameCoordinate = lineSplited[1].split("#");
                     String name = nameCoordinate[0];
@@ -42,10 +42,12 @@ public class ReceiveMessageFromServerForGameBoard implements Runnable{
                     int col = Integer.parseInt(coordinates[1]);
                     int value = Integer.parseInt(coordinates[2]);
 
-                    if(name.equals(parent.getMyUsername()))
-                    {
-                        parent.setTurnText(lineSplited[0]);
-                        parent.updateCellBackground(row,col,value);
+                    if (name.equals(parent.getMyUsername())) {
+                        Intent intent = new Intent("UPDATE_CELL");
+                        intent.putExtra("row", row);
+                        intent.putExtra("col", col);
+                        intent.putExtra("value", value);
+                        LocalBroadcastManager.getInstance(parent).sendBroadcast(intent);
                     }
 
                 }
@@ -59,16 +61,18 @@ public class ReceiveMessageFromServerForGameBoard implements Runnable{
                     int col = Integer.parseInt(coordinates[1]);
                     int value = Integer.parseInt(coordinates[2]);
 
-                    if(name.equals(parent.getMyUsername()))
-                    {
-                        parent.setTurnText(lineSplited[0]);
-                        parent.updateCellBackground(row,col,0);
-                    }
 
+                    if (name.equals(parent.getMyUsername())) {
+                        Intent intent = new Intent("UPDATE_CELL");
+                        intent.putExtra("row", row);
+                        intent.putExtra("col", col);
+                        intent.putExtra("value", 0);
+                        LocalBroadcastManager.getInstance(parent).sendBroadcast(intent);
+                    }
                 }
             }
             catch (IOException ex) {
-                GameBoard.serverNotAvailable();
+                MainActivity.serverNotAvailable();
 
                 parent.runOnUiThread(new Runnable() {
                     @Override

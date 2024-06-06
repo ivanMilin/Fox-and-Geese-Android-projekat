@@ -127,6 +127,7 @@ public class ReceiveMessageFromServer implements Runnable{
                     int col = Integer.parseInt(coordinates[1]);
                     int value = Integer.parseInt(coordinates[2]);
 
+
                     if (name.equals(parent.getEt_username().getText().toString())) {
                         Intent intent = new Intent("UPDATE_CELL");
                         intent.putExtra("row", row);
@@ -134,9 +135,7 @@ public class ReceiveMessageFromServer implements Runnable{
                         intent.putExtra("value", 0);
                         LocalBroadcastManager.getInstance(parent).sendBroadcast(intent);
                     }
-
                 }
-
             }
             catch (IOException ex) {
                 MainActivity.serverNotAvailable();
