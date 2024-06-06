@@ -1,7 +1,9 @@
 package com.example.foxandgeese;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
@@ -57,6 +59,18 @@ public class GameBoard extends AppCompatActivity {
             {0, 3, 0, 3, 0, 3, 0, 3},
             {3, 2, 3, 0, 3, 0, 3, 0}
     };
+
+    private int[][] startAgainMatrix = {
+            {1, 3, 1, 3, 1, 3, 1, 3},
+            {3, 0, 3, 0, 3, 0, 3, 0},
+            {0, 3, 0, 3, 0, 3, 0, 3},
+            {3, 0, 3, 0, 3, 0, 3, 0},
+            {0, 3, 0, 3, 0, 3, 0, 3},
+            {3, 0, 3, 0, 3, 0, 3, 0},
+            {0, 3, 0, 3, 0, 3, 0, 3},
+            {3, 2, 3, 0, 3, 0, 3, 0}
+    };
+
     private View selectedCell = null;
     private int selectedRow = -1;
     private int selectedCol = -1;
@@ -73,8 +87,46 @@ public class GameBoard extends AppCompatActivity {
                 updateCellBackground(row, col, value);
                 updateMatrix(row, col, value);
             }
+            else if(intent.getAction().equals("GAME_OVER"))
+            {
+                //Toast.makeText(GameBoard.this, "GAME OVER", Toast.LENGTH_LONG).show();
+
+                String forWho_gameover = intent.getStringExtra("forWho_gameover");
+                String fromWho_gameover = intent.getStringExtra("fromWho_gameover");
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(GameBoard.this);;
+
+                builder.setTitle("Game over")
+                        .setMessage("Wanna play again")
+                        .setCancelable(false)
+                        .setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                initializeBoardUI(tableLayout, cellSize,startAgainMatrix);
+                                setupCellClickListeners(tableLayout);
+                                //dialog.cancel();
+                            }
+                        })
+                        .setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                //dialog.cancel();
+                                finish();
+                            }
+                        })
+                        .show();
+            }
         }
     };
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("UPDATE_CELL");
+        filter.addAction("GAME_OVER");
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
+    }
 
     @Override
     protected void onDestroy() {
@@ -119,7 +171,7 @@ public class GameBoard extends AppCompatActivity {
         cellSize = screenWidth / BOARD_SIZE;
 
         // Initialize the board UI based on the matrix
-        initializeBoardUI(tableLayout, cellSize);
+        initializeBoardUI(tableLayout, cellSize,boardMatrix);
         setupCellClickListeners(tableLayout);
 
         // Example: Show "It's my turn" text
@@ -159,7 +211,7 @@ public class GameBoard extends AppCompatActivity {
         boardMatrix[7][selectedPosition] = 2;
     }
     //==============================================================================================
-    public void initializeBoardUI(TableLayout tableLayout, int cellSize) {
+    public void initializeBoardUI(TableLayout tableLayout, int cellSize, int[][] boardMatrix) {
         tableLayout.removeAllViews();
         for (int row = 0; row < BOARD_SIZE; row++) {
             TableRow tableRow = new TableRow(this);

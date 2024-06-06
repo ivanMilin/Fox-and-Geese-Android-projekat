@@ -23,6 +23,9 @@ public class ReceiveMessageFromServer implements Runnable{
         nameTurn = "";
     }
 
+    String forWho_gameover;
+    String fromWho_gameover;
+
     @Override
     public void run()
     {
@@ -91,6 +94,8 @@ public class ReceiveMessageFromServer implements Runnable{
                     String[] forWhofromWho = names[0].split(",");
                     String forWho = forWhofromWho[0];
                     String fromWho = forWhofromWho[1];
+                    forWho_gameover = forWho;
+                    fromWho_gameover = forWho;
 
                     if(forWho.equals(parent.getEt_username().getText().toString()))
                     {
@@ -136,6 +141,15 @@ public class ReceiveMessageFromServer implements Runnable{
                         LocalBroadcastManager.getInstance(parent).sendBroadcast(intent);
                     }
                 }
+                else if(line.startsWith("GameOver ="))
+                {
+                    System.out.println(line);
+                    Intent intent = new Intent("GAME_OVER");
+                    intent.putExtra("forWho_gameover", forWho_gameover);
+                    intent.putExtra("fromWho_gameover", fromWho_gameover);
+                    LocalBroadcastManager.getInstance(parent).sendBroadcast(intent);
+                }
+
             }
             catch (IOException ex) {
                 MainActivity.serverNotAvailable();

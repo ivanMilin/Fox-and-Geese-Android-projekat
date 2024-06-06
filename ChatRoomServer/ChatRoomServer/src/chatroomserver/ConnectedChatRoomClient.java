@@ -143,7 +143,40 @@ public class ConnectedChatRoomClient implements Runnable {
                         }
                         //RemoveFigure =ivan#6,2,2
                         //UpdateTable =ivan#7,1,2
-                        else if(line.startsWith("RemoveFigure =") || line.startsWith("UpdateTable ="))
+                        else if(line.startsWith("UpdateTable ="))
+                        {
+                            
+                            String[] lineSplited = (line.trim()).split("=");
+                            String[] nameCoordinate = lineSplited[1].split("#");
+                            String name = nameCoordinate[0];
+
+                            String[] coordinates = nameCoordinate[1].split(",");
+                            int row = Integer.parseInt(coordinates[0]);
+                            int col = Integer.parseInt(coordinates[1]);
+                            int value = Integer.parseInt(coordinates[2]);
+                            
+                            System.out.println("row:col:value"+row+","+col+","+value);
+                            
+                            if((row == 0 && value == 2) || (row == 7 && value == 1))
+                            {
+                                for (ConnectedChatRoomClient clnt : this.allClients) {
+                                    //prosledi poruku namenjenom korisniku
+                                    clnt.pw.println("GameOver =");
+                                    System.out.println("GameOver =");
+                                }
+                            }
+                            
+                            for (ConnectedChatRoomClient clnt : this.allClients) {
+                                if (clnt.getUserName().equals(name)) 
+                                {
+                                    //prosledi poruku namenjenom korisniku
+                                    clnt.pw.println(line);
+                                    System.out.println("Usao sam u proveru UpdateTable");
+                                } 
+                            }
+                            
+                        }
+                        else if(line.startsWith("RemoveFigure ="))
                         {
                             
                             String[] lineSplited = (line.trim()).split("=");
@@ -155,7 +188,7 @@ public class ConnectedChatRoomClient implements Runnable {
                                 {
                                     //prosledi poruku namenjenom korisniku
                                     clnt.pw.println(line);
-                                    System.out.println("Usao sam u proveru RemoveFigure || UpdateTable");
+                                    System.out.println("Usao sam u proveru RemoveFigure");
                                 } 
                             }
                         }
