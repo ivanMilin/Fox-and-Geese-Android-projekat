@@ -68,7 +68,7 @@ public class GameBoard extends AppCompatActivity {
             {0, 3, 0, 3, 0, 3, 0, 3},
             {3, 0, 3, 0, 3, 0, 3, 0},
             {0, 3, 0, 3, 0, 3, 0, 3},
-            {3, 2, 3, 0, 3, 0, 3, 0}
+            {3, 0, 3, 2, 3, 0, 3, 0}
     };
 
     private View selectedCell = null;
@@ -87,14 +87,12 @@ public class GameBoard extends AppCompatActivity {
                 updateCellBackground(row, col, value);
                 updateMatrix(row, col, value);
             }
-            else if(intent.getAction().equals("GAME_OVER"))
+            else if (intent.getAction().equals("GAME_OVER"))
             {
-                //Toast.makeText(GameBoard.this, "GAME OVER", Toast.LENGTH_LONG).show();
-
                 String forWho_gameover = intent.getStringExtra("forWho_gameover");
                 String fromWho_gameover = intent.getStringExtra("fromWho_gameover");
 
-                AlertDialog.Builder builder = new AlertDialog.Builder(GameBoard.this);;
+                AlertDialog.Builder builder = new AlertDialog.Builder(GameBoard.this);
 
                 builder.setTitle("Game over")
                         .setMessage("Wanna play again")
@@ -102,15 +100,12 @@ public class GameBoard extends AppCompatActivity {
                         .setPositiveButton("YES", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                initializeBoardUI(tableLayout, cellSize,startAgainMatrix);
-                                setupCellClickListeners(tableLayout);
-                                //dialog.cancel();
+                                resetGameBoard();
                             }
                         })
                         .setNegativeButton("NO", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                //dialog.cancel();
                                 finish();
                             }
                         })
@@ -157,24 +152,18 @@ public class GameBoard extends AppCompatActivity {
         myUsername = intent.getStringExtra(MainActivity.EXTRA_MY_USERNAME);
         myOponent = intent.getStringExtra(MainActivity.EXTRA_MY_OPONENT);
 
-        //placeBlueCircleRandomly();
-
         tableLayout = findViewById(R.id.gameBoard);
         turnText = findViewById(R.id.turnText);
 
-        // Get the screen width
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int screenWidth = displayMetrics.widthPixels;
 
-        // Calculate the size of each cell based on the screen width
         cellSize = screenWidth / BOARD_SIZE;
 
-        // Initialize the board UI based on the matrix
-        initializeBoardUI(tableLayout, cellSize,boardMatrix);
+        initializeBoardUI(tableLayout, cellSize, boardMatrix);
         setupCellClickListeners(tableLayout);
 
-        // Example: Show "It's my turn" text
         showTurnText();
 
         button_play.setOnClickListener(new View.OnClickListener() {
@@ -183,7 +172,6 @@ public class GameBoard extends AppCompatActivity {
                 Toast.makeText(GameBoard.this, "Button 1 clicked", Toast.LENGTH_SHORT).show();
                 turnText.setText("Button 1 clicked :" + myUsername);
                 disabledBoard = false;
-                //sendMessage("gameboard");
             }
         });
 
@@ -199,7 +187,7 @@ public class GameBoard extends AppCompatActivity {
     }
 
     //==============================================================================================
-    private void placeBlueCircleRandomly() {
+    private void placeBlueCircleRandomly(int[][] boardMatrix) {
         // Define the possible positions for the blue circle in the last row
         int[] positions = {1, 3, 5, 7};
 
@@ -338,7 +326,7 @@ public class GameBoard extends AppCompatActivity {
     }
     //==============================================================================================
     public void setTurnText(String string) {
-    turnText.setText(string);
+        turnText.setText(string);
     }
     //==============================================================================================
     public void connectToServer() {
@@ -401,64 +389,6 @@ public class GameBoard extends AppCompatActivity {
         }
     }
     //==============================================================================================
-    public void updateBoardUI(TableLayout tableLayout, int cellSize, int updateRow, int updateCol, int value) {
-        // Update the specific cell in the matrix
-        boardMatrix[updateRow][updateCol] = value;
-
-        // Remove all views to refresh the board UI
-        tableLayout.removeAllViews();
-
-        for (int row1 = 0; row1 < BOARD_SIZE; row1++) {
-            TableRow tableRow = new TableRow(this);
-            for (int col1 = 0; col1 < BOARD_SIZE; col1++) {
-                TextView cell = new TextView(this);
-                TableRow.LayoutParams params = new TableRow.LayoutParams(cellSize, cellSize);
-                cell.setLayoutParams(params);
-
-                // Determine the background resource based on the current boardMatrix value
-                int backgroundResource;
-                if (row1 == updateRow && col1 == updateCol) {
-                    // Use the provided value for the specific cell
-                    switch (value) {
-                        case 1:
-                            backgroundResource = R.drawable.red_circle_cell;
-                            break;
-                        case 2:
-                            backgroundResource = R.drawable.blue_circle_cell;
-                            break;
-                        case 3:
-                            backgroundResource = R.drawable.black_cell;
-                            break;
-                        case 0:
-                        default:
-                            backgroundResource = R.drawable.white_cell;
-                            break;
-                    }
-                } else {
-                    // Use the value from the matrix for all other cells
-                    switch (boardMatrix[row1][col1]) {
-                        case 1:
-                            backgroundResource = R.drawable.red_circle_cell;
-                            break;
-                        case 2:
-                            backgroundResource = R.drawable.blue_circle_cell;
-                            break;
-                        case 3:
-                            backgroundResource = R.drawable.black_cell;
-                            break;
-                        case 0:
-                        default:
-                            backgroundResource = R.drawable.white_cell;
-                            break;
-                    }
-                }
-                cell.setBackgroundResource(backgroundResource);
-                tableRow.addView(cell);
-            }
-            tableLayout.addView(tableRow);
-        }
-    }
-    //==============================================================================================
     public void updateCellBackground(int row, int col, int drawableResource) {
         if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) {
             throw new IndexOutOfBoundsException("Row or column index out of bounds");
@@ -492,6 +422,21 @@ public class GameBoard extends AppCompatActivity {
     {
         Toast.makeText(this, string, Toast.LENGTH_SHORT).show();
     }
+    //==============================================================================================
+    private void resetGameBoard() {
+        // Copy the startAgainMatrix to boardMatrix
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                boardMatrix[i][j] = startAgainMatrix[i][j];
+            }
+        }
 
+        // Reinitialize the board UI
+        initializeBoardUI(tableLayout, cellSize, boardMatrix);
+        setupCellClickListeners(tableLayout);
+
+        // Enable interactions
+        disabledBoard = false;
+    }
 
 }
