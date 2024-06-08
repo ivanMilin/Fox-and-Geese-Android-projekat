@@ -250,29 +250,33 @@ public class GameBoard extends AppCompatActivity {
                     sendMessage(messageToSend);
                 }
             } else {
-                // Move the circle to the new cell if it's a white cell
-                if (boardMatrix[row][col] == 0) {
+                // Validate move based on figure type
+                boolean isValidMove = false;
+
+                if (removedFigure == 1) { // Red figure
+                    // Red figures can only move downwards
+                    if (row > selectedRow && boardMatrix[row][col] == 0) {
+                        isValidMove = true;
+                    }
+                } else if (removedFigure == 2) { // Blue figure
+                    // Blue figures can move in any direction
+                    if (boardMatrix[row][col] == 0) {
+                        isValidMove = true;
+                    }
+                }
+
+                if (isValidMove) {
                     int selectedCircleResource = (removedFigure == 1) ? R.drawable.red_circle_cell : R.drawable.blue_circle_cell;
 
                     // Update matrix to reflect the new position
                     boardMatrix[row][col] = removedFigure;
 
-                    // Reset the selected cell background
-                    if (removedFigure == 1) {
-                        selectedCell.setBackgroundResource(R.drawable.red_circle_cell);
-                    } else {
-                        selectedCell.setBackgroundResource(R.drawable.blue_circle_cell);
-                    }
-                    selectedCell.setBackgroundResource(R.drawable.white_cell);
+                    // Update the target cell's background resource
+                    cell.setBackgroundResource(selectedCircleResource);
 
                     String messageToSend = "UpdateTable =" + myOponent + "#" + row + "," + col + "," + removedFigure;
                     Toast.makeText(this, messageToSend, Toast.LENGTH_SHORT).show();
                     sendMessage(messageToSend);
-
-                    //Log.d("BoardMatrix", matrixToString(boardMatrix));
-
-                    // Update the target cell's background resource
-                    cell.setBackgroundResource(selectedCircleResource);
 
                     // Reset selection
                     selectedCell = null;
@@ -280,12 +284,19 @@ public class GameBoard extends AppCompatActivity {
                     selectedCol = -1;
                     disabledBoard = true;
                 } else {
-                    // Deselect if an invalid move
+                    // Deselect if an invalid move and restore the figure to its original position
                     if (removedFigure == 1) {
                         selectedCell.setBackgroundResource(R.drawable.red_circle_cell);
                     } else {
                         selectedCell.setBackgroundResource(R.drawable.blue_circle_cell);
                     }
+                    boardMatrix[selectedRow][selectedCol] = removedFigure;
+
+                    String messageToSend = "UpdateTable =" + myOponent + "#" + selectedRow + "," + selectedCol + "," + removedFigure;
+                    Toast.makeText(this, messageToSend, Toast.LENGTH_SHORT).show();
+                    sendMessage(messageToSend);
+
+                    // Reset selection
                     selectedCell = null;
                     selectedRow = -1;
                     selectedCol = -1;
