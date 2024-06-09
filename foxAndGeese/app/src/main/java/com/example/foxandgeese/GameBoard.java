@@ -254,13 +254,13 @@ public class GameBoard extends AppCompatActivity {
                 boolean isValidMove = false;
 
                 if (removedFigure == 1) { // Red figure
-                    // Red figures can only move downwards
-                    if (row > selectedRow && boardMatrix[row][col] == 0) {
+                    // Red figures can only move one cell downwards
+                    if (row == selectedRow + 1 && boardMatrix[row][col] == 0) {
                         isValidMove = true;
                     }
                 } else if (removedFigure == 2) { // Blue figure
-                    // Blue figures can move in any direction
-                    if (boardMatrix[row][col] == 0) {
+                    // Blue figures can move one cell in any direction (up or down)
+                    if ((row == selectedRow + 1 || row == selectedRow - 1) && boardMatrix[row][col] == 0) {
                         isValidMove = true;
                     }
                 }
