@@ -31,8 +31,10 @@ public class MainActivity extends AppCompatActivity {
     Button button_connect;
     EditText et_username;
 
-    public static String EXTRA_MY_USERNAME;
-    public static String EXTRA_MY_OPONENT;
+    public static String USERNAME_EXTRA;
+    public static String OPPONENT_EXTRA;
+
+    String myOponent;
 
 
     private Socket socket;
@@ -84,22 +86,31 @@ public class MainActivity extends AppCompatActivity {
         //btnDialogAccept.setOnClickListener(new View.OnClickListener() {
         button_play.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(View v)
+            {
+                if(!et_username.getText().toString().equals(spinner.getSelectedItem().toString()))
+                {
+                    String porukaZaSlanje = "GameRequest =" + spinner.getSelectedItem().toString() + "," + et_username.getText().toString() + ":wants to play with you";
+                    myOponent = spinner.getSelectedItem().toString();
+                    Toast.makeText(MainActivity.this, porukaZaSlanje, Toast.LENGTH_SHORT).show();
+                    sendMessage(porukaZaSlanje);
+                }
+                else
+                    Toast.makeText(MainActivity.this, "You can't play with yourself!", Toast.LENGTH_SHORT).show();
 
-                String porukaZaSlanje = "GameRequest =" + spinner.getSelectedItem().toString()+"," + et_username.getText().toString() + ":wants to play with you";
-
-                Toast.makeText(MainActivity.this, porukaZaSlanje, Toast.LENGTH_SHORT).show();
-                sendMessage(porukaZaSlanje);
             }
         });
     }
     //==============================================================================================
     public void loginGUI() {
         Intent intent = new Intent(this, GameBoard.class);
-        String myName = et_username.getText().toString().trim();
-        intent.putExtra(EXTRA_MY_USERNAME, myName);
-        String myOponent = spinner.getSelectedItem().toString();
-        intent.putExtra(EXTRA_MY_OPONENT, myOponent);
+        String myNamemyOponent = et_username.getText().toString().trim() +","+myOponent;
+
+        System.out.println("+++++++++++++++++++++++++++++++++++++++++");
+        System.out.println("MainActivity - "+myNamemyOponent);
+        System.out.println("+++++++++++++++++++++++++++++++++++++++++");
+
+        intent.putExtra(USERNAME_EXTRA, myNamemyOponent);
         startActivity(intent);
     }
     //==============================================================================================
@@ -167,12 +178,16 @@ public class MainActivity extends AppCompatActivity {
     public BufferedReader getBr() {
         return br;
     }
-
+    //==============================================================================================
     public Spinner getSpinner() {
         return spinner;
     }
-
+    //==============================================================================================
     public EditText getEt_username() {
         return et_username;
+    }
+    //==============================================================================================
+    public void setMyOponent(String myOponent) {
+        this.myOponent = myOponent;
     }
 }

@@ -56,6 +56,7 @@ public class ReceiveMessageFromServer implements Runnable{
                     String[] forWhofromWho = names[0].split(",");
                     String forWho = forWhofromWho[0];
                     String fromWho = forWhofromWho[1];
+
                     parent.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -71,6 +72,7 @@ public class ReceiveMessageFromServer implements Runnable{
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {
                                                 parent.sendMessage("ChallengeAccepted ="+fromWho+","+forWho);
+                                                parent.setMyOponent(fromWho);
                                                 parent.loginGUI();
                                                 dialog.cancel();
                                             }
@@ -99,7 +101,7 @@ public class ReceiveMessageFromServer implements Runnable{
 
                     if(forWho.equals(parent.getEt_username().getText().toString()))
                     {
-                        System.out.println("Usao sam u proveru if-a");
+                        //System.out.println("Usao sam u proveru if-a");
                         parent.loginGUI();
                     }
                 }

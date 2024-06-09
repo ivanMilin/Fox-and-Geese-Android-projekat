@@ -35,8 +35,8 @@ public class GameBoard extends AppCompatActivity {
     private BufferedReader br;
     private PrintWriter pw;
 
-    String myUsername;
-    String myOponent;
+    String myUsername, myOponent;
+    String myUsernamemyOponent;
 
     int removedFigure;
     TableLayout tableLayout;
@@ -89,9 +89,6 @@ public class GameBoard extends AppCompatActivity {
             }
             else if (intent.getAction().equals("GAME_OVER"))
             {
-                String forWho_gameover = intent.getStringExtra("forWho_gameover");
-                String fromWho_gameover = intent.getStringExtra("fromWho_gameover");
-
                 AlertDialog.Builder builder = new AlertDialog.Builder(GameBoard.this);
 
                 builder.setTitle("Game over")
@@ -124,9 +121,10 @@ public class GameBoard extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
+    protected void onPause() {
+        super.onPause();
+        System.out.println("Test Unregistering receiver"); // Add logging
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
-        super.onDestroy();
     }
 
     @Override
@@ -136,6 +134,7 @@ public class GameBoard extends AppCompatActivity {
         setContentView(R.layout.game_board);
 
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, new IntentFilter("UPDATE_CELL"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, new IntentFilter("GAME_OVER"));
 
         button_play = findViewById(R.id.button_play);
         button_home = findViewById(R.id.button_home);
@@ -149,11 +148,20 @@ public class GameBoard extends AppCompatActivity {
         connectToServer();
 
         Intent intent = getIntent();
-        myUsername = intent.getStringExtra(MainActivity.EXTRA_MY_USERNAME);
-        myOponent = intent.getStringExtra(MainActivity.EXTRA_MY_OPONENT);
+        myUsernamemyOponent = intent.getStringExtra(MainActivity.USERNAME_EXTRA);
+
+        System.out.println("+++++++++++++++++++++++++++++++++++++++++");
+        System.out.println("GameBoard - "+myUsernamemyOponent);
+        System.out.println("+++++++++++++++++++++++++++++++++++++++++");
+
+        String[] splited = myUsernamemyOponent.split(",");
+        myUsername = splited[0];
+        myOponent  = splited[1];
 
         tableLayout = findViewById(R.id.gameBoard);
         turnText = findViewById(R.id.turnText);
+
+        turnText.setText("Player :" + myUsername+"\n    fox turn");
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -170,7 +178,7 @@ public class GameBoard extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Toast.makeText(GameBoard.this, "Button 1 clicked", Toast.LENGTH_SHORT).show();
-                turnText.setText("Button 1 clicked :" + myUsername);
+                //turnText.setText("Button 1 clicked :" + myUsername);
                 disabledBoard = false;
             }
         });
@@ -179,7 +187,7 @@ public class GameBoard extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Toast.makeText(GameBoard.this, "Button 2 clicked", Toast.LENGTH_SHORT).show();
-                turnText.setText("Button 2 clicked :" + myUsername);
+                //turnText.setText("Button 2 clicked :" + myUsername);
                 disabledBoard = false;
                 finish();
             }
