@@ -65,7 +65,7 @@
             app:layout_constraintVertical_bias="0.58" />
 
         <EditText
-            android:id="@+id/editTextText4"
+            android:id="@+id/et_ipAddress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="175dp"

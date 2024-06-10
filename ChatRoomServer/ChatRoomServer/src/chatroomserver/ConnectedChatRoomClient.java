@@ -23,6 +23,28 @@ public class ConnectedChatRoomClient implements Runnable {
     private BufferedReader br;
     private PrintWriter pw;
     private ArrayList<ConnectedChatRoomClient> allClients;
+    
+    private int[][] boardMatrix = {
+            {1, 3, 1, 3, 1, 3, 1, 3},
+            {3, 0, 3, 0, 3, 0, 3, 0},
+            {0, 3, 0, 3, 0, 3, 0, 3},
+            {3, 0, 3, 0, 3, 0, 3, 0},
+            {0, 3, 0, 3, 0, 3, 0, 3},
+            {3, 0, 3, 0, 3, 0, 3, 0},
+            {0, 3, 0, 3, 0, 3, 0, 3},
+            {3, 2, 3, 0, 3, 0, 3, 0}
+    };
+    
+    private int[][] startAgainMatrix = {
+            {1, 3, 1, 3, 1, 3, 1, 3},
+            {3, 0, 3, 0, 3, 0, 3, 0},
+            {0, 3, 0, 3, 0, 3, 0, 3},
+            {3, 0, 3, 0, 3, 0, 3, 0},
+            {0, 3, 0, 3, 0, 3, 0, 3},
+            {3, 0, 3, 0, 3, 0, 3, 0},
+            {0, 3, 0, 3, 0, 3, 0, 3},
+            {3, 0, 3, 2, 3, 0, 3, 0}
+    };
 
     //getters and setters
     public String getUserName() {
@@ -31,6 +53,22 @@ public class ConnectedChatRoomClient implements Runnable {
 
     public void setUserName(String userName) {
         this.userName = userName;
+    }
+    
+    public int[][] getBoardMatrix() {
+        return boardMatrix;
+    }
+    
+    public void updateMatrix(int row, int col, int value)
+    {
+        int[][] matrix = getBoardMatrix();
+
+        if (row >= 0 && row < matrix.length && col >= 0 && col < matrix[0].length)
+        {
+            matrix[row][col] = value;
+        } else {
+            throw new IndexOutOfBoundsException("Row or column index out of bounds");
+        }
     }
 
     //Konstruktor klase, prima kao argument socket kao vezu sa uspostavljenim klijentom
@@ -128,6 +166,7 @@ public class ConnectedChatRoomClient implements Runnable {
                         }
                         else if(line.startsWith("ChallengeAccepted ="))
                         {
+                            //ChallengeAccepted =jovan,ivan
                             String[] lineSplited = (line.trim()).split("=");
                             String[] names = lineSplited[1].split(":");
                             String[] forWhofromWho = names[0].split(",");
@@ -191,6 +230,32 @@ public class ConnectedChatRoomClient implements Runnable {
                                     //prosledi poruku namenjenom korisniku
                                     clnt.pw.println(line);
                                     System.out.println("Usao sam u proveru RemoveFigure");
+                                } 
+                            }
+                        }
+                        else if(line.startsWith("RequestDenied ="))
+                        {
+                            String[] lineSplited = (line.trim()).split("=");
+                            String messageForWho = lineSplited[1];
+                            
+                            for (ConnectedChatRoomClient clnt : this.allClients) {
+                                if (clnt.getUserName().equals(messageForWho)) 
+                                {
+                                    //prosledi poruku namenjenom korisniku
+                                    clnt.pw.println(line);
+                                } 
+                            }
+                        }
+                        else if(line.startsWith("TerminateGame ="))
+                        {
+                            String[] lineSplited = (line.trim()).split("=");
+                            String messageForWho = lineSplited[1];
+                            
+                            for (ConnectedChatRoomClient clnt : this.allClients) {
+                                if (clnt.getUserName().equals(messageForWho)) 
+                                {
+                                    //prosledi poruku namenjenom korisniku
+                                    clnt.pw.println(line);
                                 } 
                             }
                         }

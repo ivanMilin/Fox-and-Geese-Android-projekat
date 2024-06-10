@@ -10,17 +10,21 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 public class ReceiveMessageFromServer implements Runnable{
 
     MainActivity parent;
+    PrintWriter pw;
     BufferedReader br;
     String nameTurn;
+    String myUsername ;
 
     public ReceiveMessageFromServer(MainActivity parent) {
         this.parent = parent;
         this.br = parent.getBr();
         nameTurn = "";
+        this.pw = parent.getPw();
     }
 
     String forWho_gameover;
@@ -29,6 +33,7 @@ public class ReceiveMessageFromServer implements Runnable{
     @Override
     public void run()
     {
+
         while (true) {
             try {
                 String line = this.br.readLine();
@@ -39,7 +44,7 @@ public class ReceiveMessageFromServer implements Runnable{
                         @Override
                         public void run()
                         {
-                            parent.displayMessageFromReceiveMessageFromServer(line);
+                            //parent.displayMessageFromReceiveMessageFromServer(line);
                             parent.getSpinner().setAdapter(null);
                             Spinner spinner = parent.getSpinner();
                             ArrayAdapter<String> adapter = new ArrayAdapter<>(parent, android.R.layout.simple_spinner_dropdown_item, names);
@@ -81,6 +86,7 @@ public class ReceiveMessageFromServer implements Runnable{
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {
                                                 dialog.cancel();
+                                                parent.sendMessage("RequestDenied =" + fromWho);
                                             }
                                         })
                                         .show();
@@ -153,6 +159,46 @@ public class ReceiveMessageFromServer implements Runnable{
                     intent.putExtra("forWho_gameover", forWho_gameover);
                     intent.putExtra("fromWho_gameover", fromWho_gameover);
                     LocalBroadcastManager.getInstance(parent).sendBroadcast(intent);
+                }
+                else if(line.startsWith("RequestDenied ="))
+                {
+                    String[] lineSplited = (line.trim()).split("=");
+                    String messageForWho = lineSplited[1];
+
+                    //System.out.println("RequestDenied =" + myUsername +" , " + messageForWho);
+
+                    if(messageForWho.equals(parent.getEt_username().getText().toString()))
+                    {
+                        System.out.println("RequestDenied = inside if-statement");
+                        parent.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(parent);
+
+                                builder.setTitle("Game request")
+                                        .setMessage("Player " + parent.getSpinner().getSelectedItem().toString()  + " denied request")
+                                        .setCancelable(false)
+                                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                dialog.cancel();
+                                            }
+                                        })
+                                        .show();
+                            }
+                        });
+                    }
+                }
+                else if(line.startsWith("TerminateGame ="))
+                {
+                    String[] lineSplited = (line.trim()).split("=");
+                    String messageForWho = lineSplited[1];
+
+                    if(messageForWho.equals(parent.getEt_username().getText().toString()))
+                    {
+                        Intent intent = new Intent("TERMINATE_GAME");
+                        LocalBroadcastManager.getInstance(parent).sendBroadcast(intent);
+                    }
                 }
 
             }

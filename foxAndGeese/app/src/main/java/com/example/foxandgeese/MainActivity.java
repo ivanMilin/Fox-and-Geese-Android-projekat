@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     Button button_play;
     Button button_connect;
     EditText et_username;
+    EditText et_ipAddress;
 
     public static String USERNAME_EXTRA;
     public static String OPPONENT_EXTRA;
@@ -61,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
         button_play = (Button) findViewById(R.id.button_home);
         button_connect = (Button) findViewById(R.id.button_connect);
         et_username = (EditText) findViewById(R.id.et_username);
+        et_ipAddress = (EditText) findViewById(R.id.et_ipAddress);
         builder = new AlertDialog.Builder(this);
 
         MainActivity.this.spinner.setEnabled(false);
@@ -70,15 +72,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String username = et_username.getText().toString().trim();
-                if (!username.isEmpty())
+                if (!username.isEmpty() && !et_ipAddress.toString().isEmpty())
                 {
                     connectToServer();
                     et_username.setEnabled(false);
+                    et_ipAddress.setEnabled(false);
                     //new Thread(new ReceiveMessageFromServer(MainActivity.this)).start();
                 }
                 else
                 {
-                    Toast.makeText(MainActivity.this, "You forgot to insert username!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "You forgot to insert username or IpAddress!", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -92,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
                 {
                     String porukaZaSlanje = "GameRequest =" + spinner.getSelectedItem().toString() + "," + et_username.getText().toString() + ":wants to play with you";
                     myOponent = spinner.getSelectedItem().toString();
-                    Toast.makeText(MainActivity.this, porukaZaSlanje, Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(MainActivity.this, porukaZaSlanje, Toast.LENGTH_SHORT).show();
                     sendMessage(porukaZaSlanje);
                 }
                 else
@@ -120,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 Singleton singleton = Singleton.getInstance();
+                singleton.setIpAddress(et_ipAddress.getText().toString().trim());
                 if (singleton != null) {
                     MainActivity.this.socket = singleton.socket;
                     MainActivity.this.br = singleton.br;
@@ -175,6 +179,8 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, "String from" + string, Toast.LENGTH_SHORT).show();
     }
     //==============================================================================================
+    public PrintWriter getPw() {return pw;}
+    //==============================================================================================
     public BufferedReader getBr() {
         return br;
     }
@@ -190,4 +196,6 @@ public class MainActivity extends AppCompatActivity {
     public void setMyOponent(String myOponent) {
         this.myOponent = myOponent;
     }
+    //==============================================================================================
+
 }

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -78,8 +79,7 @@ public class GameBoard extends AppCompatActivity {
     private int selectedCol = -1;
 
     private boolean disabledBoard = false;
-    String foxTurnText = "Fox turn";
-    String geeseTurnText = "Geese turn";
+    String nextTurn;
 
     private boolean isFoxTurn = true;
 
@@ -90,7 +90,7 @@ public class GameBoard extends AppCompatActivity {
                 int row = intent.getIntExtra("row", -1);
                 int col = intent.getIntExtra("col", -1);
                 int value = intent.getIntExtra("value", -1);
-                String nextTurn = intent.getStringExtra("whichTurn");
+                nextTurn = intent.getStringExtra("whichTurn");
 
                 if (nextTurn != null) {
                     turnText.setText(nextTurn);
@@ -99,7 +99,9 @@ public class GameBoard extends AppCompatActivity {
 
                 updateCellBackground(row, col, value);
                 updateMatrix(row, col, value);
-            } else if (intent.getAction().equals("GAME_OVER")) {
+            }
+            else if (intent.getAction().equals("GAME_OVER"))
+            {
                 AlertDialog.Builder builder = new AlertDialog.Builder(GameBoard.this);
 
                 builder.setTitle("Game over")
@@ -107,17 +109,24 @@ public class GameBoard extends AppCompatActivity {
                         .setCancelable(false)
                         .setPositiveButton("YES", new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(DialogInterface dialog, int which) {
+                            public void onClick(DialogInterface dialog, int which)
+                            {
                                 resetGameBoard();
                             }
                         })
                         .setNegativeButton("NO", new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(DialogInterface dialog, int which) {
+                            public void onClick(DialogInterface dialog, int which)
+                            {
+                                sendMessage("TerminateGame ="+myOponent);
                                 finish();
                             }
                         })
                         .show();
+            }
+            else if(intent.getAction().equals("TERMINATE_GAME"))
+            {
+                finish();
             }
         }
     };
@@ -128,6 +137,7 @@ public class GameBoard extends AppCompatActivity {
         IntentFilter filter = new IntentFilter();
         filter.addAction("UPDATE_CELL");
         filter.addAction("GAME_OVER");
+        filter.addAction("TERMINATE_GAME");
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
     }
 
@@ -146,6 +156,7 @@ public class GameBoard extends AppCompatActivity {
 
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, new IntentFilter("UPDATE_CELL"));
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, new IntentFilter("GAME_OVER"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, new IntentFilter("TERMINATE_GAME"));
 
         button_play = findViewById(R.id.button_play);
         button_home = findViewById(R.id.button_home);
@@ -184,23 +195,50 @@ public class GameBoard extends AppCompatActivity {
         setupCellClickListeners(tableLayout);
 
         showTurnText();
-        //Toast.makeText(GameBoard.this, "Player :" + myUsername + " fox turn", Toast.LENGTH_LONG).show();
+
+        final boolean[] isOriginalState1 = {true};
+        final boolean[] isOriginalState2 = {true};
+
+        button_play.setText(myUsername);
+        button_home.setText(myOponent);
         button_play.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                //Toast.makeText(GameBoard.this, "Button 1 clicked", Toast.LENGTH_SHORT).show();
-                //turnText.setText("Button 1 clicked :" + myUsername);
+            public void onClick(View v)
+            {
+                if (isOriginalState1[0])
+                {
+                    button_play.setBackgroundColor(Color.RED);
+                    button_play.setTextColor(Color.WHITE);
+                }
+                else
+                {
+                    button_play.setBackgroundColor(Color.WHITE);
+                    button_play.setTextColor(Color.RED);
+                }
+
+                isOriginalState1[0] = !isOriginalState1[0];
                 disabledBoard = false;
             }
         });
 
         button_home.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                //Toast.makeText(GameBoard.this, "Button 2 clicked", Toast.LENGTH_SHORT).show();
-                //turnText.setText("Button 2 clicked :" + myUsername);
+            public void onClick(View v)
+            {
+                if (isOriginalState2[0])
+                {
+                    button_home.setBackgroundColor(Color.RED);
+                    button_home.setTextColor(Color.WHITE);
+                }
+                else
+                {
+                    button_home.setBackgroundColor(Color.WHITE);
+                    button_home.setTextColor(Color.RED);
+                }
+
+                isOriginalState2[0] = !isOriginalState2[0];
                 disabledBoard = false;
-                finish();
+
             }
         });
     }
@@ -459,9 +497,6 @@ public class GameBoard extends AppCompatActivity {
         // Reinitialize the board UI
         initializeBoardUI(tableLayout, cellSize, boardMatrix);
         setupCellClickListeners(tableLayout);
-
-        // Enable interactions
-        //disabledBoard = false;
     }
 
 }
