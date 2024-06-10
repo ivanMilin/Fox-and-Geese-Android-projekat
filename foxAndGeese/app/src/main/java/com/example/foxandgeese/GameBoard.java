@@ -47,6 +47,8 @@ public class GameBoard extends AppCompatActivity {
 
     int cellSize;
 
+    int index = 0;
+
     private static final int BOARD_SIZE = 8;
     private TextView turnText;
     private int[][] boardMatrix = {
@@ -76,6 +78,10 @@ public class GameBoard extends AppCompatActivity {
     private int selectedCol = -1;
 
     private boolean disabledBoard = false;
+    String foxTurnText = "Fox turn";
+    String geeseTurnText = "Geese turn";
+
+    private boolean isFoxTurn = true;
 
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
@@ -84,11 +90,16 @@ public class GameBoard extends AppCompatActivity {
                 int row = intent.getIntExtra("row", -1);
                 int col = intent.getIntExtra("col", -1);
                 int value = intent.getIntExtra("value", -1);
+                String nextTurn = intent.getStringExtra("whichTurn");
+
+                if (nextTurn != null) {
+                    turnText.setText(nextTurn);
+                    isFoxTurn = nextTurn.equals("Fox turn");
+                }
+
                 updateCellBackground(row, col, value);
                 updateMatrix(row, col, value);
-            }
-            else if (intent.getAction().equals("GAME_OVER"))
-            {
+            } else if (intent.getAction().equals("GAME_OVER")) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(GameBoard.this);
 
                 builder.setTitle("Game over")
@@ -161,7 +172,7 @@ public class GameBoard extends AppCompatActivity {
         tableLayout = findViewById(R.id.gameBoard);
         turnText = findViewById(R.id.turnText);
 
-        turnText.setText("Player :" + myUsername+"\n    fox turn");
+        turnText.setText("Fox turn");
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -173,11 +184,11 @@ public class GameBoard extends AppCompatActivity {
         setupCellClickListeners(tableLayout);
 
         showTurnText();
-
+        //Toast.makeText(GameBoard.this, "Player :" + myUsername + " fox turn", Toast.LENGTH_LONG).show();
         button_play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(GameBoard.this, "Button 1 clicked", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(GameBoard.this, "Button 1 clicked", Toast.LENGTH_SHORT).show();
                 //turnText.setText("Button 1 clicked :" + myUsername);
                 disabledBoard = false;
             }
@@ -186,7 +197,7 @@ public class GameBoard extends AppCompatActivity {
         button_home.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(GameBoard.this, "Button 2 clicked", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(GameBoard.this, "Button 2 clicked", Toast.LENGTH_SHORT).show();
                 //turnText.setText("Button 2 clicked :" + myUsername);
                 disabledBoard = false;
                 finish();
@@ -242,32 +253,26 @@ public class GameBoard extends AppCompatActivity {
     private void handleCellClick(View cell, int row, int col) {
         if (!disabledBoard) {
             if (selectedCell == null) {
-                // Select the cell if it contains a circle
                 if (boardMatrix[row][col] == 1 || boardMatrix[row][col] == 2) {
                     selectedCell = cell;
                     selectedRow = row;
                     selectedCol = col;
                     cell.setBackgroundResource(R.drawable.white_cell);
 
-                    // Store the removed figure and update the matrix
                     removedFigure = boardMatrix[row][col];
                     boardMatrix[row][col] = 0; // Set the current cell to empty
 
                     String messageToSend = "RemoveFigure =" + myOponent + "#" + selectedRow + "," + selectedCol + "," + removedFigure;
-                    Toast.makeText(this, messageToSend, Toast.LENGTH_SHORT).show();
                     sendMessage(messageToSend);
                 }
             } else {
-                // Validate move based on figure type
                 boolean isValidMove = false;
 
-                if (removedFigure == 1) { // Red figure
-                    // Red figures can only move one cell downwards
+                if (removedFigure == 1) {
                     if (row == selectedRow + 1 && boardMatrix[row][col] == 0) {
                         isValidMove = true;
                     }
-                } else if (removedFigure == 2) { // Blue figure
-                    // Blue figures can move one cell in any direction (up or down)
+                } else if (removedFigure == 2) {
                     if ((row == selectedRow + 1 || row == selectedRow - 1) && boardMatrix[row][col] == 0) {
                         isValidMove = true;
                     }
@@ -275,24 +280,20 @@ public class GameBoard extends AppCompatActivity {
 
                 if (isValidMove) {
                     int selectedCircleResource = (removedFigure == 1) ? R.drawable.red_circle_cell : R.drawable.blue_circle_cell;
-
-                    // Update matrix to reflect the new position
                     boardMatrix[row][col] = removedFigure;
-
-                    // Update the target cell's background resource
                     cell.setBackgroundResource(selectedCircleResource);
 
-                    String messageToSend = "UpdateTable =" + myOponent + "#" + row + "," + col + "," + removedFigure;
-                    Toast.makeText(this, messageToSend, Toast.LENGTH_SHORT).show();
+                    isFoxTurn = !isFoxTurn; // Toggle the turn
+                    String nextTurn = isFoxTurn ? "Fox turn" : "Geese turn";
+                    turnText.setText(nextTurn);
+                    String messageToSend = "UpdateTable =" + myOponent + "#" + row + "," + col + "," + removedFigure + "#" + nextTurn;
                     sendMessage(messageToSend);
 
-                    // Reset selection
                     selectedCell = null;
                     selectedRow = -1;
                     selectedCol = -1;
                     disabledBoard = true;
                 } else {
-                    // Deselect if an invalid move and restore the figure to its original position
                     if (removedFigure == 1) {
                         selectedCell.setBackgroundResource(R.drawable.red_circle_cell);
                     } else {
@@ -300,15 +301,17 @@ public class GameBoard extends AppCompatActivity {
                     }
                     boardMatrix[selectedRow][selectedCol] = removedFigure;
 
-                    String messageToSend = "UpdateTable =" + myOponent + "#" + selectedRow + "," + selectedCol + "," + removedFigure;
-                    Toast.makeText(this, messageToSend, Toast.LENGTH_SHORT).show();
+                    isFoxTurn = !isFoxTurn; // Toggle the turn
+                    String nextTurn = isFoxTurn ? "Fox turn" : "Geese turn";
+                    turnText.setText(nextTurn);
+                    String messageToSend = "UpdateTable =" + myOponent + "#" + row + "," + col + "," + removedFigure + "#" + nextTurn;
                     sendMessage(messageToSend);
 
-                    // Reset selection
+                    isFoxTurn = !isFoxTurn; // Toggle the turn
+
                     selectedCell = null;
                     selectedRow = -1;
                     selectedCol = -1;
-                    Toast.makeText(this, "Invalid move!", Toast.LENGTH_SHORT).show();
                 }
             }
         }

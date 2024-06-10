@@ -155,7 +155,9 @@ public class ConnectedChatRoomClient implements Runnable {
                             int col = Integer.parseInt(coordinates[1]);
                             int value = Integer.parseInt(coordinates[2]);
                             
-                            System.out.println("row:col:value"+row+","+col+","+value);
+                            String whoseTurn = nameCoordinate[2];
+                          
+                            System.out.println("row:col:value:whoseTurn"+row+","+col+","+value+","+whoseTurn);
                             
                             if((row == 0 && value == 2) || (row == 7 && value == 1))
                             {

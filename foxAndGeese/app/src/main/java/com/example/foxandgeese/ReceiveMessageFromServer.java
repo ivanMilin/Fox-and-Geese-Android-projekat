@@ -106,6 +106,7 @@ public class ReceiveMessageFromServer implements Runnable{
                     }
                 }
                 else if(line.startsWith("UpdateTable =")) {
+                    System.out.println(line);
                     String[] lineSplited = (line.trim()).split("=");
                     String[] nameCoordinate = lineSplited[1].split("#");
                     String name = nameCoordinate[0];
@@ -114,12 +115,14 @@ public class ReceiveMessageFromServer implements Runnable{
                     int row = Integer.parseInt(coordinates[0]);
                     int col = Integer.parseInt(coordinates[1]);
                     int value = Integer.parseInt(coordinates[2]);
+                    String whichTurn = nameCoordinate[2];
 
                     if (name.equals(parent.getEt_username().getText().toString())) {
                         Intent intent = new Intent("UPDATE_CELL");
                         intent.putExtra("row", row);
                         intent.putExtra("col", col);
                         intent.putExtra("value", value);
+                        intent.putExtra("whichTurn", whichTurn);
                         LocalBroadcastManager.getInstance(parent).sendBroadcast(intent);
                     }
 
