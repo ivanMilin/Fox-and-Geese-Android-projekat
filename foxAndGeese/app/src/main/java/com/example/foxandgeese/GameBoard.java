@@ -253,7 +253,8 @@ public class GameBoard extends AppCompatActivity {
     private void handleCellClick(View cell, int row, int col) {
         if (!disabledBoard) {
             if (selectedCell == null) {
-                if (boardMatrix[row][col] == 1 || boardMatrix[row][col] == 2) {
+                // Ensure correct figure is selected based on current turn
+                if ((isFoxTurn && boardMatrix[row][col] == 2) || (!isFoxTurn && boardMatrix[row][col] == 1)) {
                     selectedCell = cell;
                     selectedRow = row;
                     selectedCol = col;
@@ -264,6 +265,8 @@ public class GameBoard extends AppCompatActivity {
 
                     String messageToSend = "RemoveFigure =" + myOponent + "#" + selectedRow + "," + selectedCol + "," + removedFigure;
                     sendMessage(messageToSend);
+                } else {
+                    Toast.makeText(this, "Invalid selection! It's " + (isFoxTurn ? "Fox" : "Geese") + " turn.", Toast.LENGTH_SHORT).show();
                 }
             } else {
                 boolean isValidMove = false;
@@ -292,8 +295,9 @@ public class GameBoard extends AppCompatActivity {
                     selectedCell = null;
                     selectedRow = -1;
                     selectedCol = -1;
-                    disabledBoard = true;
+                    //disabledBoard = true;
                 } else {
+                    // Deselect if an invalid move and restore the figure to its original position
                     if (removedFigure == 1) {
                         selectedCell.setBackgroundResource(R.drawable.red_circle_cell);
                     } else {
@@ -301,17 +305,16 @@ public class GameBoard extends AppCompatActivity {
                     }
                     boardMatrix[selectedRow][selectedCol] = removedFigure;
 
-                    isFoxTurn = !isFoxTurn; // Toggle the turn
                     String nextTurn = isFoxTurn ? "Fox turn" : "Geese turn";
                     turnText.setText(nextTurn);
-                    String messageToSend = "UpdateTable =" + myOponent + "#" + row + "," + col + "," + removedFigure + "#" + nextTurn;
+                    String messageToSend = "UpdateTable =" + myOponent + "#" + selectedRow + "," + selectedCol + "," + removedFigure + "#" + nextTurn;
                     sendMessage(messageToSend);
 
-                    isFoxTurn = !isFoxTurn; // Toggle the turn
-
+                    // Reset selection
                     selectedCell = null;
                     selectedRow = -1;
                     selectedCol = -1;
+                    Toast.makeText(this, "Invalid move!", Toast.LENGTH_SHORT).show();
                 }
             }
         }
@@ -458,7 +461,7 @@ public class GameBoard extends AppCompatActivity {
         setupCellClickListeners(tableLayout);
 
         // Enable interactions
-        disabledBoard = false;
+        //disabledBoard = false;
     }
 
 }
