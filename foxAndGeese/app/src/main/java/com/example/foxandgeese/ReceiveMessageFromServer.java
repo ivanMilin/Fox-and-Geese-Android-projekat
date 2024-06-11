@@ -156,8 +156,6 @@ public class ReceiveMessageFromServer implements Runnable{
                 {
                     System.out.println(line);
                     Intent intent = new Intent("GAME_OVER");
-                    intent.putExtra("forWho_gameover", forWho_gameover);
-                    intent.putExtra("fromWho_gameover", fromWho_gameover);
                     LocalBroadcastManager.getInstance(parent).sendBroadcast(intent);
                 }
                 else if(line.startsWith("RequestDenied ="))

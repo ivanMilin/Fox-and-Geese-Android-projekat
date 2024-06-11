@@ -104,14 +104,18 @@ public class GameBoard extends AppCompatActivity {
             {
                 AlertDialog.Builder builder = new AlertDialog.Builder(GameBoard.this);
 
+                String whoWon = isFoxTurn ? "Geese turn" : "Fox turn";
+                String[] whoWon_splited = whoWon.split(" ");
+
                 builder.setTitle("Game over")
-                        .setMessage("Wanna play again")
+                        .setMessage("Winner is " +whoWon_splited[0] + ", wanna play again")
                         .setCancelable(false)
                         .setPositiveButton("YES", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which)
                             {
                                 resetGameBoard();
+                                sendMessage("RestartBoard =");
                             }
                         })
                         .setNegativeButton("NO", new DialogInterface.OnClickListener() {
@@ -498,5 +502,4 @@ public class GameBoard extends AppCompatActivity {
         initializeBoardUI(tableLayout, cellSize, boardMatrix);
         setupCellClickListeners(tableLayout);
     }
-
 }
